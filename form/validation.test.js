@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validate} from './src/validation.js';
+const good={name:'Test User',email:'test@example.com',phone:'01712345678',password:'secret123',course:'web',birthDate:'2000-01-01'};
+const image={type:'image/png',size:100};
+test('valid submission passes',()=>assert.deepEqual(validate(good,image),{}));
+test('all seven required fields are checked',()=>assert.equal(Object.keys(validate({name:'',email:'',phone:'',password:'',course:'',birthDate:''},null)).length,7));
+test('invalid values receive specific errors',()=>{const e=validate({...good,email:'bad',phone:'123',password:'abcdefgh',course:'unknown',birthDate:'2999-01-01'},image);for(const key of ['email','phone','password','course','birthDate']) assert.ok(e[key]);});
+test('invalid image type rejected',()=>assert.ok(validate(good,{type:'text/plain',size:100}).image));
+test('oversized image rejected',()=>assert.ok(validate(good,{...image,size:2097153}).image));
+test('image at size limit accepted',()=>assert.deepEqual(validate(good,{...image,size:2097152}),{}));
